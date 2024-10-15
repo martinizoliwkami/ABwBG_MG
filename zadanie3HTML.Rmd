@@ -1,0 +1,21 @@
+---
+title: "Zadanie 3"
+author: "Martyna G."
+date: "2024-10-15"
+output: html_document
+---
+
+**Wprowadzenie:** Raport z zajęć z Analizy bioinformatycznej.
+
+-   **Opis środowiska:** Zainstalowałam ggplot2, MDDC i kilka wymaganych do korzystania z Markdowna.
+
+-   **Przykładowy kod:** \# DATA_ZAJĘĆ
+
+**Temat zajęć**
+
+*Potrzebne programy*
+
+-   Zadania
+    -   1
+    -   2
+-   **Wnioski:** Robić wizualnie atrakcyjniejszy tekst.
