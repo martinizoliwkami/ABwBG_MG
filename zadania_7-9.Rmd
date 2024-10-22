@@ -1,0 +1,94 @@
+---
+title: "ZADANIA 7+ ćwicz3"
+author: "Martyna G."
+date: "2024-10-22"
+output: html_document
+---
+**CZĘŚĆ 7**
+
+# Z1
+ramka_danych <- read.csv("studenci.csv")
+str(ramka_danych)
+#tutaj w consoli wyrzuci mi dane z excela
+
+# Z2
+ramka_danych <- read.csv("studenci.csv")
+str(ramka_danych)  # Wyświetlenie struktury ramki danych
+
+# Z2 edit.- tutaj korzystałam z chatugpt, bo nie działało mi zapisanie pliku w normalnej, jednej linijce, to podpowiedział mi zrobienie zależności
+
+if (nrow(ramka_danych) > 0) {
+  # Sprawdzenie, czy ramka danych nie jest pusta
+  write.csv(ramka_danych, "dane_output.csv", row.names = TRUE)  # Zapis z nazwami wierszy
+  cat("Dane zostały zapisane do pliku 'dane_output.csv'.\n")
+} else {
+  cat("Ramka danych jest pusta, nie można zapisać do pliku.\n")
+}
+
+# Z3
+linijki <- readLines("dokument.txt", n = 10)
+print(linijki)
+
+#WYRZUCA TO TAK: [1] "Linia 1"  "Linia 2"  "Linia 3"  "Linia 4"  "Linia 5"  "Linia 6" 
+ [7] "Linia 7"  "Linia 8"  "Linia 9"  "Linia 10"
+ 
+ 
+ 
+#Z4
+
+wektor_linii <- c("Linia 1", "Linia 2", "Linia 3")
+writeLines(wektor_linii, "linie.txt")
+cat("Wektor został zapisany do pliku 'linie.txt'.\n")
+
+
+#Z5 - ten sam myk od chatu, bo nie działa inaczej :c
+
+plik_istnieje <- file.exists("dane.csv")
+
+if (plik_istnieje) {
+  cat("Plik 'dane.csv' jest w katalogu.\n")
+} else {
+  cat("Plik 'dane.csv' nie ma.\n")
+}
+
+#Z6
+
+setwd("C:/Użytkownicy/Jan/Dokumenty")
+cat("Katalog roboczy został ustawiony na:", getwd(), "\n")
+
+**CZĘŚĆ 8**
+
+#Z1
+zdanie <- paste("R", "jest", "wspaniały!")
+print(zdanie)
+
+#Z2
+napis <- "Analiza danych"
+dlugosc <- nchar(napis)
+print(dlugosc)
+
+#Z3
+tekst <- "Witaj Świecie"
+tekst_duze <- toupper(tekst)  
+print(tekst_duze)
+
+#Z4
+wektor <- c("jabłko", "banan", "gruszka")
+zawiera_a <- grepl("a", wektor) 
+print(zawiera_a)  #powinno być t,t,t
+
+**CZĘŚĆ 9**
+
+#Z1
+set.seed(123) 
+losowe_liczby <- rnorm(50, mean = 10, sd = 2) 
+print(losowe_liczby)
+
+#Z2
+x <- 1
+dystrybuanta <- pnorm(x, mean = 0, sd = 1)
+print(dystrybuanta)
+
+#Z3
+kwantyl <- qnorm(0.025)
+print(kwantyl)
