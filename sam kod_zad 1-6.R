@@ -1,0 +1,141 @@
+#CZĘŚĆ 1
+
+**ZAD 1** #kod 1
+  
+  podstawa <- 10
+  wysokosc <- 5
+  pole_trojkata <- (podstawa * wysokosc) / 2
+  cat("Pole trójkąta:", pole_trojkata, "\n")
+  
+  **ZAD 2** #kod 2
+    
+    liczba <- 256
+  dzielnik <- 7
+  reszta <- liczba %% dzielnik
+  wynik_dziel <- liczba %/% dzielnik 
+  cat("Reszta z dzielenia", reszta, "\n")
+  cat("Wynik dzielenia", wynik_dziel, "\n")
+  
+  **ZAD 4** #kod 4
+    
+    liczba <- 7.895
+  zaokraglenie_w_dol <- floor(liczba) 
+  zaokraglenie_w_gore <- ceiling(liczba)
+  cat("Liczba 7.895 w dół:", zaokraglenie_w_dol, "\n")
+  cat("Liczba 7.895 w górę:", zaokraglenie_w_gore, "\n")
+  
+  #CZĘŚĆ 2
+  
+  **Z1**
+    wektor1 <- c(2, 4, 6, 8, 10)
+  
+  srednia <- mean(wektor1)  
+  mediana <- median(wektor1)  
+  wariancja <- var(wektor1)  
+  
+  cat("Średnia:", srednia, "\n")
+  cat("Mediana:", mediana, "\n")
+  cat("Wariancja:", wariancja, "\n")
+  
+  **Z2**
+    set.seed(123) #losowe liczby
+  wektor2 <- sample(1:100, 50, replace = TRUE)
+  
+  min_war <- min(wektor2)  
+  max_war <- max(wektor2)  
+  suma <- sum(wektor2)  
+  
+  cat("Minimalna:", min_war, "\n")
+  cat("Maksymalna:", max_war, "\n")
+  cat("Suma:", suma, "\n")
+  
+  **Z3**
+    wektor3 <- c(3, 7, 7, 7, 2, 2, 5)
+  
+  tabela_czestosci <- table(wektor3)
+  
+  cat("Tabela częstości:\n")
+  print(tabela_czestosci)
+  
+  
+  #CZĘŚĆ 3 
+  **Z1**
+    wektor1 <- seq(0, 1, by = 0.1)
+  print(wektor1)
+  
+  **Z2**
+    wektor2 <- c(2, 4, 6, 8, 10)
+  
+  wybraneel <- wektor2[c(2, 4)]
+  print(wybraneel)
+  
+  **Z3**
+    wektor3 <- c(5, 3, 8, 1, 9)
+  
+  elementy_wieksze_niz_4 <- wektor3[wektor3 > 4]
+  print(elementy_wieksze_niz_4)
+  
+  #CZĘŚĆ 4
+  **Z1**
+    
+    nazwa <- c("Produkt A", "Produkt B", "Produkt C")
+  cena <- c(10.99, 15.49, 7.89)
+  ilosc <- c(5, 3, 10)
+  
+  produkty <- data.frame(nazwa, cena, ilosc)
+  print(produkty)
+  
+  **Z2**
+    print(produkty$nazwa)
+  
+  **Z3**
+    produkty$wartosc <- produkty$cena * produkty$ilosc
+  print(produkty)
+  
+  
+  #CZĘŚĆ 5
+  
+  **Z1**
+    liczba <- 7
+  wynik <- liczba > 5 & liczba < 10
+  print(wynik)  # Powinno zwrócić true
+  
+  **Z2**
+    
+    wektor <- c(-3, 2, 5)
+  wynik <- ifelse(wektor > 0, "Dodatnia", "Ujemna")
+  print(wynik)  # Powinno byc w kolejnosci "Ujemna" "Dodatnia" "Dodatnia"
+  
+  **Z3**
+    
+    wektor_logiczny <- c(FALSE, FALSE, TRUE)
+  wynik <- any(wektor_logiczny)
+  print(wynik)
+  
+  #CZĘŚĆ 6
+  
+  **Z1**
+    for (i in 1:5) {
+      print(i)
+    }
+  
+  **Z2**
+    n <- 5
+  silnia <- 1
+  i <- 1
+  
+  while (i <= n) {
+    silnia <- silnia * i
+    i <- i + 1
+  }
+  
+  print(silnia) 
+  
+  **Z3**
+    
+    macierz <- matrix(1:10, nrow = 2, ncol = 5)
+  print(macierz)
+  
+  suma_wierszy <- apply(macierz, 1, sum)  
+  print(suma_wierszy)
+  
