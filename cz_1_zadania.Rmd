@@ -1,0 +1,33 @@
+---
+title: "Część1_zadania_R"
+author: "Martyna G."
+date: "2024-10-22"
+output: html_document
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
+**ZAD 1** #kod 1
+
+podstawa <- 10
+wysokosc <- 5
+pole_trojkata <- (podstawa * wysokosc) / 2
+cat("Pole trójkąta:", pole_trojkata, "\n")
+
+**ZAD 2** #kod 2
+
+liczba <- 256
+dzielnik <- 7
+reszta <- liczba %% dzielnik
+wynik_dziel <- liczba %/% dzielnik 
+cat("Reszta z dzielenia", reszta, "\n")
+cat("Wynik dzielenia", wynik_dziel, "\n")
+
+**ZAD 4** #kod 4
+
+liczba <- 7.895
+zaokraglenie_w_dol <- floor(liczba) 
+zaokraglenie_w_gore <- ceiling(liczba)
+cat("Liczba 7.895 w dół:", zaokraglenie_w_dol, "\n")
+cat("Liczba 7.895 w górę:", zaokraglenie_w_gore, "\n")
