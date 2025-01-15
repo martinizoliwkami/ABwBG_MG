@@ -1,0 +1,226 @@
+#instalacja pakietów
+
+if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+BiocManager::install("VariantTools", "Rsamtools", "GenomicRanges", "GenomicFeatures", "VariantAnnotation", "BiocParallel")
+
+library(VariantTools)
+library(Rsamtools)
+library(GenomicRanges)
+library(GenomicFeatures)
+library(VariantAnnotation)
+library(BiocParallel)
+
+#konfiguracja i wprowadzenie danych
+
+setwd("C://Users//marty//Desktop//")
+list.files()
+bamfile <- "C://Users//marty//Desktop//aligned_sample.BAM"
+bam <- BamFile(bamfile)
+
+ref_genome <- "C://Users//marty//Desktop//ecoli_reference.fasta"
+fa <- FaFile(ref_genome)
+input_bam <- "C://Users//marty//Desktop//aligned_sample.BAM"
+output_bam <- "C://Users//marty//Desktop//sorted_aligned_sample.BAM"
+sortBam(file = input_bam, destination = output_bam, overwrite = TRUE)
+sorted_bam <- paste0(output_bam, ".bam")
+
+# indeksowanie plików
+indexFa(ref_genome)
+indexBam(sorted_bam)
+
+# kontrola jakości 
+scanBamHeader(bam)
+idxstats <- idxstatsBam(sorted_bam)
+print(idxstats)
+coverage_data <- coverage(sorted_bam)
+summary(coverage_data[[1]])
+plot(coverage_data[[1]], main = "pokrycie genomu sekwencji", ylab = "pokrycie", xlab = "pozycja w genomie")
+
+# wykrywanie wariantow <- nie działało mi to w ogóle z plików na githubie, spróbowałam dwóch sposobów <- z youtuba i z chatu gpt
+#dopiero czat pomógł, więc wstawiłam, dodał tak jakby podwójnie procenty, nie rozumiem, ale działa 
+
+pileup_param <- PileupParam(
+    distinguish_strands = FALSE,
+    distinguish_nucleotides = TRUE,
+    min_base_quality = 20
+)
+
+pile <- pileup(sorted_bam, scanBamParam = ScanBamParam(), pileupParam = pileup_param)
+
+library(dplyr)
+
+pile_df <- pile %>%
+    mutate(seqnames = as.character(seqnames)) %>%
+    mutate(seqnames = ifelse(seqnames == "U00096.3", "NC_000913.3", seqnames))
+
+variant_candidates <- pile_df %>%
+    group_by(seqnames, pos) %>%
+    summarise(
+        total = sum(count),
+        A = sum(count[nucleotide == "A"]),
+        C = sum(count[nucleotide == "C"]),
+        G = sum(count[nucleotide == "G"]),
+        T = sum(count[nucleotide == "T"]),
+        .groups = 'drop'
+    ) %>%
+    mutate(
+        ref = as.character(getSeq(fa, GRanges(seqnames, IRanges(pos, pos))))
+    ) %>%
+    rowwise() %>%>%
+    mutate(
+        alt_alleles = list(setdiff(c("A", "C", "G", "T"), ref)),
+        ref_count = sum(c_across(c("A", "C", "G", "T"))[ref]),
+        alt_count = sum(c_across(c("A", "C", "G", "T"))[alt_alleles])
+    ) %>%
+    ungroup() %>%
+
+#filtracja minimalnej liczby odczytów i filtrowane na podstawie proporcji,
+#pierwsze wybiera te, gdzie odczyt jest większy/równy pięć, więc odrzucamy bardzo małe liczby odczytów,
+które mogą być błędem.
+#drugie wybiera te, gdzie całkowita loiczba odczytów to conajmniej 20% 
+    filter(alt_count >= 5) %>%
+    filter((alt_count / total) >= 0.2)
+
+head(variant_candidates)
+filtered_variants <- variant_candidates %>%
+    filter(total >= 10, alt_count / total >= 0.2, alt_count >= 5)
+
+cat("wairanty przed filtrowaniem", nrow(variant_candidates), "\n")
+cat("warianty po filtrowaniu", nrow(filtered_variants), "\n")
+
+#kolejne zajęcia, instlauje wymagane pakiety i wczytuje dane 
+
+df_variants <- as.data.frame(filtered_variants)
+write.csv(df_variants, "C://Users//marty//Desktop//wyniki_bioinf.csv")
+
+packages <- c("rrBLUP"
+   , "BGLR"
+   , "DT"
+   , "SNPRelate"
+   , "dplyr"
+   , "qqman"
+   , "poolr")
+
+{for (pkg in packages) {
+  if(!require(pkg, character.only = TRUE)) {
+    install.packages(pkg, dependencies = TRUE)
+    }
+  }
+}
+
+library(pkg, character.only = TRUE)
+Geno <- read_ped("sativas413.ped")
+# wczytujemy kolumny jako osobne wartości
+p = Geno$p
+n = Geno$n
+Geno = Geno$x
+head(Geno)
+Geno
+FAM <- read.table("sativas413.fam")
+head(FAM)
+MAP <- read.table("sativas413.map")
+head(MAP)
+
+#przekodowuje dane i robię macierz, potem transpozycja i podaje jej wymiary
+Geno[Geno == 2] <- NA
+Geno[Geno == 0] <- 0
+Geno[Geno == 1] <- 1
+Geno[Geno == 3] <- 2
+Geno <- matrix(Geno, nrow = p, ncol = n, byrow = TRUE)
+Geno <- t(Geno)
+dim(Geno) #to podaje liczbę snipów i osobników
+
+#wczytuje dane fenotypowe
+
+rice.pheno <- read.table("RiceDiversity_44K_Phenotypes_34traits_PLINK.txt",
+                         header = TRUE, stringsAsFactors = FALSE, sep = "\t")
+head(rice.pheno)
+dim(rice.pheno)
+rownames(Geno) <- FAM$V2
+table(rownames(Geno) == rice.pheno$NSFTVID)
+
+#sprawdzam pierwszą cechę - wyodrębniam ją
+y <- matrix(rice.pheno$Flowering.time.at.Arkansas)
+rownames(y) <- rice.pheno$NSFTVID
+index <- !is.na(y)
+y <- y[index, 1, drop = FALSE]
+Geno <- Geno[index, ]
+table(rownames(Geno) == rownames(y))
+for (j in 1:ncol(Geno)){
+  Geno[, j] <- ifelse(is.na(Geno[, j]), mean(Geno[, j], nar.rm = TRUE), Geno[, j])
+}
+
+# obliczanie frekwencji allelu mniejszościowego dla każdego SNP
+p <- colSums(Geno)/(2 * nrow(Geno))
+
+# definiuje MAF (kolumny mające małą częstość allelu mniejszościowego) mniejsze od 5%
+maf <- ifelse(p > 0.5, 1-p, p)
+maf.index <- which(maf < 0.05)
+Geno1 <- Geno[, -maf.index]
+dim(Geno1)
+MAP <- read.table("sativas413.map")
+dim(MAP)
+MAP1 <- MAP[-maf.index, ]
+dim(MAP1)
+
+#analiza PCA
+Geno1 <- as.matrix(Geno1)
+sample <- row.names(Geno1)
+length(sample)
+colnames(Geno1) <- MAP1$V2
+snp.id <- colnames(Geno1)
+length(snp.id)
+
+#tworzenie pliku GDS <- od tego momentu kod mi nie działał i do teraz nie umiem go naprawić
+#nie jestem w stanie wczytać pliku do analizy GWAS
+snpgdsCreateGeno("44k.gds", genmat = Geno1, sample.id = sample, snp.id = snp.id, 
+                 snp.chromosome = MAP1$V1, snp.position = MAP1$V4, snpfirstdim = FALSE)
+
+geno_44k <- snpgdsOpen("44k.gds")
+snpgdsSummary("44k.gds")
+pca <- snpgdsPCA(geno_44k, snp.id = colnames(Geno1))
+pca <- data.frame(sample.id = row.names(Geno1), 
+                  EV1 = pca$eigenvect[, 1], 
+                  EV2 = pca$eigenvect[, 2], 
+                  EV3 = pca$eigenvect[, 3], 
+                  EV4 = pca$eigenvect[, 4], 
+                  stringsAsFactors = FALSE)
+
+plot(pca$EV2, pca$EV1, xlab = "PC2", ylab = "PC1")
+pca_1 <- read.csv("RiceDiversity.44K.germplasm.csv", 
+                  header = TRUE, skip = 1, stringsAsFactors = FALSE)
+pca_2 <- pca_1[match(pca$sample.id, pca_1$NSFTV.ID), ]
+
+pca_population <- cbind(pca_2$Sub.population, pca)
+colnames(pca_population)[1] <- "population"
+
+plot(pca_population$EV1, pca_population$EV2, xlab = "PC1", ylab = "PC2", 
+     col = c(1:6)[factor(pca_population$population)])
+legend(x = "topright", legend = levels(factor(pca_population$population)), 
+       col = c(1:6), pch = 1, cex = 0.6)
+
+
+#DALEJ KOD Z ZAJĘĆ DO PRACY
+pca_1 <- read.csv("RiceDiversity.44K.germplasm.csv", 
+                  header = TRUE, skip = 1, stringsAsFactors = FALSE)
+pca_2 <- pca_1[match(pca$sample.id, pca_1$NSFTV.ID), ]
+
+pca_population <- cbind(pca_2$Sub.population, pca)
+colnames(pca_population)[1] <- "population"
+
+plot(pca_population$EV1, pca_population$EV2, xlab = "PC1", ylab = "PC2", 
+     col = c(1:6)[factor(pca_population$population)])
+legend(x = "topright", legend = levels(factor(pca_population$population)), 
+       col = c(1:6), pch = 1, cex = 0.6)
+geno_final <- data.frame(marker = MAP1[, 2], chrom = MAP1[, 1], pos = MAP1[, 4], 
+                         t(Geno1 - 1), check.names = FALSE)
+
+pheno_final <- data.frame(NSFTV_ID = rownames(y), y = y)
+GWAS <- GWAS(pheno_final, geno_final, min.MAF = 0.05, P3D = TRUE, plot = FALSE)
+GWAS_1 <- GWAS %>% filter(y != "0")
+GWAS_1 %>% filter(y < 1e-04)
+head(GWAS_1)
+manhattan(x = GWAS_1, chr = "chrom", bp = "pos", p = "y", snp = "marker", 
+          col = c("blue4", "orange3"), suggestiveline = -log10(1e-04), logp = TRUE)
